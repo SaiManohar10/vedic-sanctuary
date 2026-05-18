@@ -4,7 +4,7 @@ import requests
 import google.generativeai as genai_stable
 
 # 1. YOUR FREE GEMINI KEY IS PRE-LOADED HERE
-GEMINI_API_KEY = "AIzaSyc8b8lxOeRslEFhDUwCDfQwnq3lreuUMo4"
+GEMINI_API_KEY = "AIzaSyAODN7ysJPhK5NoWtiRmuS2UiHVcv_AesQ"
 
 # Connect using the stable library method cleanly
 genai_stable.configure(api_key=GEMINI_API_KEY)
