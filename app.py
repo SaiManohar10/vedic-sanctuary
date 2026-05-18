@@ -6,8 +6,8 @@ from groq import Groq
 # 1. SECURE KEY CONFIGURATION (Looks into Streamlit Secrets Vault)
 if "GROQ_API_KEY" in st.secrets:
     GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-elif "groq_api_key" in st.sidebar.session_state:
-    GROQ_API_KEY = st.sidebar.session_state["groq_api_key"]
+elif "groq_api_key" in st.session_state:
+    GROQ_API_KEY = st.session_state["groq_api_key"]
 else:
     GROQ_API_KEY = ""
 
@@ -43,7 +43,7 @@ if not GROQ_API_KEY:
     st.sidebar.warning("⚠️ Key Needed Below:")
     input_key = st.sidebar.text_input("Enter Groq API Key", type="password")
     if input_key:
-        st.secrets["GROQ_API_KEY"] = input_key
+        st.session_state["groq_api_key"] = input_key
         st.rerun()
 
 st.sidebar.write("---")
