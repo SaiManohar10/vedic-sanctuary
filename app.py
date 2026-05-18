@@ -1,14 +1,18 @@
 import streamlit as st
 import datetime
 import requests
-import google.generativeai as genai_stable
+from groq import Groq
 
-# 1. YOUR FREE GEMINI KEY IS PRE-LOADED HERE
-GEMINI_API_KEY = "AIzaSyAODN7ysJPhK5NoWtiRmuS2UiHVcv_AesQ"
+# 1. SECURE KEY CONFIGURATION (Looks into Streamlit Secrets Vault)
+if "GROQ_API_KEY" in st.secrets:
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+elif "groq_api_key" in st.sidebar.session_state:
+    GROQ_API_KEY = st.sidebar.session_state["groq_api_key"]
+else:
+    GROQ_API_KEY = ""
 
-# Connect using the stable library method cleanly
-genai_stable.configure(api_key=GEMINI_API_KEY)
-model = genai_stable.GenerativeModel('gemini-1.5-flash')
+# Connect cleanly to the free Groq client if key is available
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 # 2. DESIGN THE SACRED SPACE (THEME & STYLING)
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
@@ -26,13 +30,21 @@ st.title("🔱 The Vedic Sanctuary")
 st.markdown("<p style='text-align: center; color: #666;'>Speak with your personal Guru. Receive timeless cosmic counsel.</p>", unsafe_allow_html=True)
 st.write("---")
 
-# 3. SIDEBAR: THE DATA COLLECTION ONBOARDING PANEL
+# 3. SIDEBAR: THE DATA COLLECTION PANEL
 st.sidebar.header("📜 Your Sacred Birth Details")
-seeker_name = st.sidebar.text_input("Your Name", value="Seeker")
+seeker_name = st.sidebar.text_input("Your Name", value="Manohar")
 dob = st.sidebar.date_input("Date of Birth", datetime.date(1998, 6, 10))
 tob = st.sidebar.time_input("Exact Time of Birth")
 pob = st.sidebar.text_input("Place of Birth", value="Hyderabad, India")
-life_goal = st.sidebar.selectbox("Your Core Focus", ["Inner Peace & Stability", "Career & Abundance Growth", "Harmonizing Relationships", "Health & Vitality"])
+life_goal = st.sidebar.selectbox("Your Core Focus", ["Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"])
+
+# Backup fallback slot in sidebar if secrets aren't deployed yet
+if not GROQ_API_KEY:
+    st.sidebar.warning("⚠️ Key Needed Below:")
+    input_key = st.sidebar.text_input("Enter Groq API Key", type="password")
+    if input_key:
+        st.secrets["GROQ_API_KEY"] = input_key
+        st.rerun()
 
 st.sidebar.write("---")
 st.sidebar.header("💞 Divine Union Sync (Partner)")
@@ -40,9 +52,8 @@ has_partner = st.sidebar.checkbox("Link Partner's Profile")
 partner_name = "None"
 if has_partner:
     partner_name = st.sidebar.text_input("Partner's Name", value="Beloved")
-    partner_dob = st.sidebar.date_input("Partner's DOB")
 
-# 4. FETCH THE FREE COSMIC ENVIRONMENT DATA
+# 4. FETCH COSMIC DATA
 @st.cache_data(ttl=3600)
 def fetch_sandbox_astrology():
     try:
@@ -62,8 +73,11 @@ def fetch_sandbox_astrology():
 
 cosmic_data = fetch_sandbox_astrology()
 
-# 5. THE BRAIN: MAKE THE AI TALK LIKE A PRO GURU
+# 5. THE BRAIN: CHAT GENERATION ENGINE
 def get_guru_response(user_message):
+    if not client:
+        return "⚠️ **System Update Needed:** Please add your valid Groq API key in the sidebar dashboard to activate your Guru."
+
     system_instruction = (
         "You are an ancient, omniscient Vedic Rishi and a deeply compassionate divine guru. "
         "You speak with serene authority, immense warmth, and absolute cosmic wisdom. "
@@ -76,7 +90,6 @@ def get_guru_response(user_message):
     )
 
     context_package = (
-        f"{system_instruction}\n\n"
         f"--- COSMIC PROFILE FOR TODAY ---\n"
         f"Seeker's Name: {seeker_name}\n"
         f"Primary Goal: {life_goal}\n"
@@ -90,30 +103,38 @@ def get_guru_response(user_message):
     )
 
     try:
-        response = model.generate_content(context_package)
-        return response.text
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": context_package}
+            ],
+            temperature=0.6,
+        )
+        return completion.choices[0].message.content
     except Exception as e:
-        return f"My child, the planetary currents are shifting momentarily. Breathe deeply and ask me again."
+        return f"🪐 Cosmic connection error: {str(e)}"
 
-# 6. ENGINE ROOM: THE INTERACTIVE CHAT WINDOW INTERFACE
+# 6. INTERACTIVE CHAT CORE LOOP
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-    with st.spinner("Channeling your daily cosmic alignments..."):
-        initial_blessing = get_guru_response("Act as the Guru. Give me my morning blessing, lucky attributes, and today's mantra.")
-        st.session_state.chat_history.append({"role": "model", "content": initial_blessing})
 
+# Display history
 for chat in st.session_state.chat_history:
-    avatar_icon = "✨" if chat["role"] == "model" else "👤"
-    with st.chat_message("assistant" if chat["role"] == "model" else "user", avatar=avatar_icon):
+    avatar_icon = "✨" if chat["role"] == "assistant" else "👤"
+    with st.chat_message(chat["role"], avatar=avatar_icon):
         st.markdown(chat["content"])
 
-if user_query := st.chat_input("Ask your Guru about your day..."):
+# Catch User Input
+if user_query := st.chat_input("Ask your Guru about your day, career paths, or guidance..."):
+    # Append user question
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     with st.chat_message("user", avatar="👤"):
         st.markdown(user_query)
         
+    # Generate Guru Answer dynamically
     with st.chat_message("assistant", avatar="✨"):
         with st.spinner("Reflecting on the cosmic paths..."):
             guru_reply = get_guru_response(user_query)
             st.markdown(guru_reply)
-            st.session_state.chat_history.append({"role": "model", "content": guru_reply})
+            st.session_state.chat_history.append({"role": "assistant", "content": guru_reply})
