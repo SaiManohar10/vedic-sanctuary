@@ -250,7 +250,7 @@ elif app_mode == "💬 Rishi Chat Engine":
                 completion = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
                     messages=[
-                        {"role": "system", "system_prompt"},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": chat_query}
                     ],
                     temperature=0.6
