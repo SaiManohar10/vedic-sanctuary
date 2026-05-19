@@ -1,4 +1,5 @@
 streamlit
-google-generativeai
 requests
 groq
+pandas
+st-gsheets-connection
