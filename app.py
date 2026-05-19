@@ -66,11 +66,9 @@ except:
 # ==========================================
 if not st.session_state.registered and db_conn is not None:
     try:
-        # Scan cloud storage to find if any user records exist
         existing_data = db_conn.read(ttl=5)
         if not existing_data.empty:
             last_row = existing_data.iloc[-1]
-            # Safely validate that the row is structurally robust
             if pd.notna(last_row.get("Name")) and str(last_row.get("Name")).strip() != "":
                 st.session_state.user_profile = {
                     "name": str(last_row["Name"]),
@@ -78,18 +76,19 @@ if not st.session_state.registered and db_conn is not None:
                     "gender": str(last_row.get("Gender", "Male")),
                     "pob": str(last_row.get("POB", "Hyderabad, India")),
                     "tob": str(last_row.get("TOB", "12:00:00")),
-                    "focus": str(last_row.get("Focus", "Career & Abundance Growth"))
+                    "focus": str(last_row.get("Focus", "Career & Abundance Growth")),
+                    "gotram": str(last_row.get("Gotram", "Not Specified")),
+                    "known_star": str(last_row.get("Known_Star", "Not Specified")),
+                    "current_dasha": str(last_row.get("Current_Dasha", "Not Specified"))
                 }
                 st.session_state.registered = True
     except Exception as e:
-        pass # Fallback gracefully to the clean registration screen
+        pass
 
 # 4. TIMEZONE ENGINE: FORCED INDIAN STANDARD TIME (IST) CALCULATION
 def calculate_live_panchangam():
-    # Explicit conversion to Asia/Kolkata timezone standard
     ist_zone = ZoneInfo("Asia/Kolkata")
     now_ist = datetime.datetime.now(ist_zone)
-    
     day_of_week = now_ist.strftime("%A")
     
     timing_matrix = {
@@ -148,16 +147,18 @@ def compute_user_frequencies(focus_area):
     return matrix.get(focus_area, matrix["Career & Abundance Growth"])
 
 # ==========================================
-# MODULE 1: MANDATORY SEEKER CLEAN REGISTRATION PAGE
+# MODULE 1: ASTROLOGER-GRADE SEEKER REGISTRATION GATE
 # ==========================================
 if not st.session_state.registered:
     st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='sub-header'>Create your cosmic alignment profile to enter the sacred workspace</p>", unsafe_allow_html=True)
+    st.markdown("<p class='sub-header'>Establish your birth alignment coordinates to enter the sacred space</p>", unsafe_allow_html=True)
     
-    st.subheader("📜 Seeker Registration Engine")
-    st.write("Please enter your exact birth coordinates below. Frequencies will compute dynamically upon entry:")
+    st.subheader("📜 Comprehensive Astro Onboarding Engine")
+    st.write("Provide your core milestones. Optional parameters can be left unselected to run standard calculations:")
     
     with st.form("gated_registration_form"):
+        # Section A: Mandatory Cosmic Data Coordinates
+        st.markdown("<b style='color:#E65C00; font-size:1.1rem;'>1. Core Birth Coordinates (Required)</b>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             name = st.text_input("Full Name", value="", placeholder="Enter your full name")
@@ -165,9 +166,19 @@ if not st.session_state.registered:
             gender = st.selectbox("Gender Association", ["Select Gender", "Male", "Female", "Non-Binary"])
         with col2:
             pob = st.text_input("Birth Location / City", value="", placeholder="e.g. Hyderabad, India")
-            # BUG FIX 1: Explicit minute-by-minute step configuration unlocked
             tob = st.time_input("Exact Time of Birth", value=datetime.time(12, 0), step=60)
             core_focus = st.selectbox("Select Your Core Focus Timeline", ["Select Focus", "Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"])
+            
+        st.write("---")
+        # Section B: Traditional Specialized Astrological Parameters (Optional)
+        st.markdown("<b style='color:#A04000; font-size:1.1rem;'>2. Traditional Horoscope Parameters (Optional Expansion)</b>", unsafe_allow_html=True)
+        col3, col4, col5 = st.columns(3)
+        with col3:
+            gotram = st.text_input("Gotram Lineage", value="", placeholder="e.g. Bharadwaja, Kasyapa")
+        with col4:
+            known_star = st.text_input("Known Janma Nakshatram", value="", placeholder="e.g. Krittika, Hasta")
+        with col5:
+            current_dasha = st.selectbox("Current Active Maha Dasha Period", ["Not Known / Auto-Calculate", "Rahu Dasha", "Guru Dasha (Jupiter)", "Shani Dasha (Saturn)", "Budha Dasha (Mercury)", "Ketu Dasha", "Sukra Dasha (Venus)", "Surya Dasha (Sun)", "Chandra Dasha (Moon)", "Kujava Dasha (Mars)"])
             
         submit_btn = st.form_submit_button("🔱 Compute My Regional Panchangam & Dashboard")
         
@@ -175,8 +186,15 @@ if not st.session_state.registered:
             if name.strip() == "" or pob.strip() == "" or gender == "Select Gender" or core_focus == "Select Focus":
                 st.error("❌ Form Error: Please specify your name, birth location, gender, and core focus to compute elements.")
             else:
+                # Set fallbacks for optional parameters to ensure clean data storage records
+                val_gotram = gotram.strip() if gotram.strip() != "" else "Not Specified"
+                val_star = known_star.strip() if known_star.strip() != "" else "Not Specified"
+                val_dasha = current_dasha if current_dasha != "Not Known / Auto-Calculate" else "Not Specified"
+                
                 profile_data = {
-                    "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [str(tob)], "Focus": [core_focus], "Timestamp": [str(datetime.datetime.now())]
+                    "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [str(tob)], "Focus": [core_focus],
+                    "Gotram": [val_gotram], "Known_Star": [val_star], "Current_Dasha": [val_dasha],
+                    "Timestamp": [str(datetime.datetime.now())]
                 }
                 try:
                     if db_conn:
@@ -185,7 +203,8 @@ if not st.session_state.registered:
                     pass
                     
                 st.session_state.user_profile = {
-                    "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": str(tob), "focus": core_focus
+                    "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": str(tob), "focus": core_focus,
+                    "gotram": val_gotram, "known_star": val_star, "current_dasha": val_dasha
                 }
                 st.session_state.registered = True
                 st.rerun()
@@ -205,7 +224,7 @@ else:
         st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Your daily alignment portal anchored in ancient cosmic calculations</p>", unsafe_allow_html=True)
         
-        # TIME DISPLAY BANNER (BUG FIX 5: Explicitly locked to dynamic Indian Standard Time)
+        # TIME DISPLAY BANNER (IST Sync Locked)
         st.markdown(f"""
             <div style="background-color: #FFF9F3; border: 1px solid #FFD3BC; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px;">
                 <span style="color: #666; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">📅 Current Local Alignment</span><br/>
@@ -214,10 +233,10 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        # WIDE PROFILE DASHBOARD CARD DESIGN (BUG FIX 3 & 4: Erased narrow HTML blocks)
+        # WIDE PROFILE DASHBOARD CARD DESIGN (UX UPGRADE)
         st.markdown(f"""
             <div class='premium-profile-banner'>
-                <div class='profile-header'>🙏 Seeker Profile: {u['name']} &nbsp;|&nbsp; <span style='font-size:1.0rem; color:#666;'>Focus: {u['focus']}</span></div>
+                <div class='profile-header'>🙏 Seeker Profile: {u['name']} &nbsp;|&nbsp; <span style='font-size:1.0rem; color:#666;'>Timeline: {u['focus']}</span></div>
                 <div class='anchor-grid'>
                     <div class='anchor-item'>
                         <span class='anchor-label'>🟢 Prime Muhurtham</span>
@@ -254,7 +273,14 @@ else:
             st.markdown(f"<div class='card'><span class='panchangam-title'>⚡ Yogam (Planetary Angle)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['yogam']}</span></div>", unsafe_allow_html=True)
         with col_p3:
             st.markdown(f"<div class='card'><span class='panchangam-title'>🌀 Karanam (Half-Thithi)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['karanam']}</span></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='card'><span class='panchangam-title'>📍 Born Coordinates Profile</span><span style='font-size:1.0rem; color:#555;'>Location: <b>{u['pob']}</b><br/>Born Time: <b>{u['tob']}</b></span></div>", unsafe_allow_html=True)
+            st.markdown(f"""<div class='card'>
+                <span class='panchangam-title'>📍 Astro Coordinates Ledger</span>
+                <span style='font-size:0.95rem; color:#444;'>
+                    City: <b>{u['pob']}</b> &nbsp;|&nbsp; Time: <b>{u['tob']}</b><br/>
+                    Gotram: <b>{u['gotram']}</b> &nbsp;|&nbsp; Nakshatram: <b>{u['known_star']}</b><br/>
+                    Active Cycle: <b>{u['current_dasha']}</b>
+                </span>
+            </div>""", unsafe_allow_html=True)
             
         # ALL DYNAMIC TIMING GAUGES DOCK
         st.markdown("<div class='section-title'>⏳ Comprehensive Timing Gauges of the Day</div>", unsafe_allow_html=True)
@@ -268,7 +294,6 @@ else:
             
         st.write("---")
         if st.button("🚪 Log Out & Clear Profile Session"):
-            # Purge the background state variables cleanly
             st.session_state.registered = False
             st.session_state.user_profile = {}
             st.rerun()
@@ -280,12 +305,14 @@ else:
         
         def get_rishi_response(chat_query):
             system_prompt = (
-                f"You are an ancient, completely omniscient Vedic Rishi counseling a seeker named {u['name']}. "
-                f"Your exclusive purpose in this module is to resolve their explicit personal doubts, confusion, or spiritual problems.\n\n"
+                f"You are an ancient, completely omniscient Vedic Rishi counseling a seeker named {u['name']}.\n"
+                f"Their astro profile metrics are: Gotram Clan: {u['gotram']}, Declared Birth Star: {u['known_star']}, Active Maha Dasha Time: {u['current_dasha']}.\n\n"
+                f"Your exclusive purpose in this module is to resolve their explicit personal doubts, confusion, or spiritual problems.\n"
                 f"Guidelines:\n"
                 f"1. Acknowledge their question with immense compassion and direct clarity. Focus on boosting their confidence.\n"
-                f"2. To anchor your answer, always close your message by reminding them of today's anchors: Lucky Color: {freq['color']}, Lucky Number: {freq['number']}, and the Sanskrit mantra: '{freq['mantra']}'.\n"
-                f"3. Keep your tone serene, authoritative, and completely direct to the point."
+                f"2. Contextualize your counsel slightly around their focus area timeline ({u['focus']}) and their active Dasha timeline if specified.\n"
+                f"3. To anchor your answer, always close your message by reminding them of today's anchors: Lucky Color: {freq['color']}, Lucky Number: {freq['number']}, and the Sanskrit mantra: '{freq['mantra']}'.\n"
+                f"4. Keep your tone serene, authoritative, and completely direct to the point."
             )
             try:
                 completion = client.chat.completions.create(
