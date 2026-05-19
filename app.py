@@ -26,7 +26,7 @@ st.markdown("""
     .panchangam-title { color: #E65C00; font-weight: bold; font-size: 1.1rem; }
     .time-alert { background-color: #FFF5F0; padding: 10px; border-radius: 8px; border: 1px solid #FFD3BC; margin-bottom: 10px; }
     </style>
-    """, unsafe_allow_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Initialize Session State Variables
 if "registered" not in st.session_state:
