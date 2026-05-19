@@ -15,34 +15,25 @@ st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="w
 
 st.markdown("""
     <style>
-    /* Global Container Tuning */
     .reportview-container { background-color: #FAF9F6; }
     h1 { color: #E65C00; font-family: 'Georgia', serif; text-align: center; font-size: 3rem; margin-bottom: 5px; font-weight: bold;}
     .sub-header { text-align: center; color: #555; font-style: italic; margin-bottom: 30px; font-size: 1.1rem; }
     .section-title { color: #A04000; font-family: 'Georgia', serif; font-size: 1.7rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #FFD3BC; padding-bottom: 8px; font-weight: bold; }
-    
-    /* Premium Premium Profile Banner Layout */
     .premium-profile-banner { background: linear-gradient(135deg, #FFFDF9 0%, #FFF5ED 100%); border: 1px solid #FFD3BC; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(230,92,0,0.06); }
     .profile-header { color: #E65C00; font-size: 1.6rem; font-family: 'Georgia', serif; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #FFD3BC; padding-bottom: 10px; }
     .anchor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 15px; }
     .anchor-item { background: #FFFFFF; padding: 15px; border-radius: 10px; border-top: 4px solid #E65C00; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
     .anchor-label { font-size: 0.85rem; color: #777; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block; }
     .anchor-value { font-size: 1.05rem; color: #222; font-weight: 600; }
-    
-    /* Standard Layout Objects */
     .card { background-color: #FFFFFF; padding: 22px; border-radius: 12px; border-left: 5px solid #E65C00; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.04); height: 100%; }
     .panchangam-title { color: #E65C00; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
     .time-alert { background-color: #FFF5F0; padding: 15px; border-radius: 10px; border: 1px solid #FFD3BC; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
     .badge-premium { background-color: #E65C00; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; display: inline-block; }
-    
-    /* UI White-Label System Controls */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDecoration {display:none;}
     [data-testid="stHeader"] {display: none;}
-    
-    /* Interactive Elements Styling */
     .stButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 10px 24px; border: none; transition: all 0.3s ease; }
     .stButton>button:hover { background-color: #C65000; transform: translateY(-1px); }
     </style>
@@ -62,11 +53,11 @@ except:
     db_conn = None
 
 # ==========================================
-# ADVANCED SUITE: AUTOMATED SESSION RECOVERY
+# AUTOMATED SESSION RECOVERY
 # ==========================================
 if not st.session_state.registered and db_conn is not None:
     try:
-        existing_data = db_conn.read(ttl=5)
+        existing_data = db_conn.read(ttl=2)
         if not existing_data.empty:
             last_row = existing_data.iloc[-1]
             if pd.notna(last_row.get("Name")) and str(last_row.get("Name")).strip() != "":
@@ -82,7 +73,7 @@ if not st.session_state.registered and db_conn is not None:
                     "current_dasha": str(last_row.get("Current_Dasha", "Not Specified"))
                 }
                 st.session_state.registered = True
-    except Exception as e:
+    except:
         pass
 
 # 4. TIMEZONE ENGINE: FORCED INDIAN STANDARD TIME (IST) CALCULATION
@@ -147,7 +138,7 @@ def compute_user_frequencies(focus_area):
     return matrix.get(focus_area, matrix["Career & Abundance Growth"])
 
 # ==========================================
-# MODULE 1: ASTROLOGER-GRADE SEEKER REGISTRATION GATE
+# MODULE 1: MANDATORY SEEKER REGISTRATION GATE
 # ==========================================
 if not st.session_state.registered:
     st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
@@ -157,7 +148,6 @@ if not st.session_state.registered:
     st.write("Provide your core milestones. Optional parameters can be left unselected to run standard calculations:")
     
     with st.form("gated_registration_form"):
-        # Section A: Mandatory Cosmic Data Coordinates
         st.markdown("<b style='color:#E65C00; font-size:1.1rem;'>1. Core Birth Coordinates (Required)</b>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
@@ -170,7 +160,6 @@ if not st.session_state.registered:
             core_focus = st.selectbox("Select Your Core Focus Timeline", ["Select Focus", "Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"])
             
         st.write("---")
-        # Section B: Traditional Specialized Astrological Parameters (Optional)
         st.markdown("<b style='color:#A04000; font-size:1.1rem;'>2. Traditional Horoscope Parameters (Optional Expansion)</b>", unsafe_allow_html=True)
         col3, col4, col5 = st.columns(3)
         with col3:
@@ -186,11 +175,11 @@ if not st.session_state.registered:
             if name.strip() == "" or pob.strip() == "" or gender == "Select Gender" or core_focus == "Select Focus":
                 st.error("❌ Form Error: Please specify your name, birth location, gender, and core focus to compute elements.")
             else:
-                # Set fallbacks for optional parameters to ensure clean data storage records
                 val_gotram = gotram.strip() if gotram.strip() != "" else "Not Specified"
                 val_star = known_star.strip() if known_star.strip() != "" else "Not Specified"
                 val_dasha = current_dasha if current_dasha != "Not Known / Auto-Calculate" else "Not Specified"
                 
+                # FIXED COLUMN GEOMETRY TO MATCH SHEET SCHEMA PRECISELY
                 profile_data = {
                     "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [str(tob)], "Focus": [core_focus],
                     "Gotram": [val_gotram], "Known_Star": [val_star], "Current_Dasha": [val_dasha],
@@ -207,24 +196,32 @@ if not st.session_state.registered:
                     "gotram": val_gotram, "known_star": val_star, "current_dasha": val_dasha
                 }
                 st.session_state.registered = True
-                st.rerun()
+                st.st.rerun()
 
 # ==========================================
-# MODULE 2: PRODUCTION VIEW OVERRIDES (POST SIGN UP)
+# MODULE 2: PRODUCTION CONTENT PLATFORM
 # ==========================================
 else:
+    # BUG FIX 3: ADDED DYNAMIC SIDEBAR PROFILE MANAGMENT ICON HUBS
+    st.sidebar.markdown(f"""
+        <div style='text-align: center; padding: 15px; background-color: #FFFDF9; border-radius: 12px; border: 1px solid #FFD3BC; margin-bottom: 20px;'>
+            <span style='font-size: 2.5rem;'>👤</span><br/>
+            <b style='color:#E65C00; font-size:1.1rem;'>Seeker: {st.session_state.user_profile['name']}</b><br/>
+            <small style='color:#777;'>Gotram: {st.session_state.user_profile['gotram']}</small>
+        </div>
+    """, unsafe_allow_html=True)
+    
     st.sidebar.header("🔱 Navigation Hub")
-    app_mode = st.sidebar.radio("Go to Module:", ["📜 Sacred Dashboard", "💬 Rishi Chat Engine"])
+    app_mode = st.sidebar.radio("Go to Module:", ["📜 Sacred Dashboard", "💬 Rishi Chat Engine", "⚙️ Edit Profile Data"])
     
     u = st.session_state.user_profile
     freq = compute_user_frequencies(u["focus"])
     
-    # 📜 MODULE 2A: SACRED DASHBOARD VIEW
+    # MODULE 2A: SACRED DASHBOARD VIEW
     if app_mode == "📜 Sacred Dashboard":
         st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Your daily alignment portal anchored in ancient cosmic calculations</p>", unsafe_allow_html=True)
         
-        # TIME DISPLAY BANNER (IST Sync Locked)
         st.markdown(f"""
             <div style="background-color: #FFF9F3; border: 1px solid #FFD3BC; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px;">
                 <span style="color: #666; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">📅 Current Local Alignment</span><br/>
@@ -233,7 +230,6 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        # WIDE PROFILE DASHBOARD CARD DESIGN (UX UPGRADE)
         st.markdown(f"""
             <div class='premium-profile-banner'>
                 <div class='profile-header'>🙏 Seeker Profile: {u['name']} &nbsp;|&nbsp; <span style='font-size:1.0rem; color:#666;'>Timeline: {u['focus']}</span></div>
@@ -262,7 +258,6 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        # FIVE LIMBS OF DYNAMIC TELUGU PANCHANGAM
         st.markdown("<div class='section-title'>☀️ Five Limbs of the Day (Panchangam)</div>", unsafe_allow_html=True)
         col_p1, col_p2, col_p3 = st.columns(3)
         with col_p1:
@@ -282,7 +277,6 @@ else:
                 </span>
             </div>""", unsafe_allow_html=True)
             
-        # ALL DYNAMIC TIMING GAUGES DOCK
         st.markdown("<div class='section-title'>⏳ Comprehensive Timing Gauges of the Day</div>", unsafe_allow_html=True)
         col_g, col_b = st.columns(2)
         with col_g:
@@ -291,14 +285,8 @@ else:
         with col_b:
             st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam:</b> {cal['rahukaalam']}<br/><small>High planetary gravity window. Postpone signing business contracts or initializing journeys.</small></div>", unsafe_allow_html=True)
             st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>⚡ Durmuhurtham:</b> {cal['durmuhurtham']}<br/><small>Frictional alignment window. Postpone major presentations or launch execution cycles.</small></div>", unsafe_allow_html=True)
-            
-        st.write("---")
-        if st.button("🚪 Log Out & Clear Profile Session"):
-            st.session_state.registered = False
-            st.session_state.user_profile = {}
-            st.rerun()
 
-    # 💬 MODULE 2B: DEDICATED EXCLUSIVE DOUBTS CHAT ENGINE
+    # MODULE 2B: DEDICATED EXCLUSIVE DOUBTS CHAT ENGINE
     elif app_mode == "💬 Rishi Chat Engine":
         st.markdown("<h1>💬 Ancient Rishi Doubt Triage</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Submit your explicit doubts, blockages, or questions directly to the Rishi council</p>", unsafe_allow_html=True)
@@ -342,3 +330,33 @@ else:
                     reply = get_rishi_response(user_msg)
                     st.markdown(reply)
                     st.session_state.chat_history.append({"role": "assistant", "content": reply})
+
+    # MODULE 2C: EDIT PROFILE INTERFACE (BUG FIX 3)
+    elif app_mode == "⚙️ Edit Profile Data":
+        st.markdown("<h1>⚙️ Edit Profile Configuration</h1>", unsafe_allow_html=True)
+        st.markdown("<p class='sub-header'>Modify your astrological parameters or clear your session records completely</p>", unsafe_allow_html=True)
+        
+        st.subheader("🔄 Update Your Active Values")
+        with st.form("edit_profile_form"):
+            new_name = st.text_input("Edit Name", value=u["name"])
+            new_pob = st.text_input("Edit Birth Location", value=u["pob"])
+            new_gotram = st.text_input("Edit Gotram Lineage", value=u["gotram"])
+            new_star = st.text_input("Edit Known Nakshatram", value=u["known_star"])
+            new_focus = st.selectbox("Edit Timeline Focus", ["Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"], index=["Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"].index(u["focus"]))
+            
+            save_edit = st.form_submit_button("💾 Save Local Configuration Changes")
+            if save_edit:
+                st.session_state.user_profile.update({
+                    "name": new_name, "pob": new_pob, "gotram": new_gotram, "known_star": new_star, "focus": new_focus
+                })
+                st.success("Configuration modifications updated locally!")
+                st.rerun()
+                
+        st.write("---")
+        st.subheader("🛑 Master Session Reset")
+        st.write("Clicking below wipes all stored local caches, logging you out completely to accept a brand new user registration:")
+        if st.button("🚪 Clear Session Profile & Log Out"):
+            st.session_state.registered = False
+            st.session_state.user_profile = {}
+            st.session_state.chat_history = []
+            st.rerun()
