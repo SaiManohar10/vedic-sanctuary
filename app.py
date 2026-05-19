@@ -3,15 +3,9 @@ import datetime
 import requests
 from groq import Groq
 
-# 1. SECURE KEY CONFIGURATION
-if "GROQ_API_KEY" in st.secrets:
-    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-elif "groq_api_key" in st.session_state:
-    GROQ_API_KEY = st.session_state["groq_api_key"]
-else:
-    GROQ_API_KEY = ""
-
-client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+# 1. PRODUCTION ENGINE CONFIGURATION (Hidden completely from user & GitHub)
+PRODUCTION_KEY = st.secrets["GROQ_API_KEY"]
+client = Groq(api_key=PRODUCTION_KEY)
 
 # 2. DESIGN THE SACRED SPACE (THEME & STYLING)
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
@@ -36,22 +30,13 @@ if "chat_history" not in st.session_state:
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {}
 
-# 3. SIDEBAR NAVIGATION & ONBOARDING CONSOLE
+# 3. SIDEBAR NAVIGATION CONSOLE (Clean, no API keys)
 st.sidebar.header("🔱 Navigation Hub")
 app_mode = st.sidebar.radio("Go to Module:", ["📜 Sacred Dashboard", "💬 Rishi Chat Engine"])
-
-st.sidebar.write("---")
-if not GROQ_API_KEY:
-    st.sidebar.warning("⚠️ Configuration Required:")
-    input_key = st.sidebar.text_input("Enter Groq API Key", type="password")
-    if input_key:
-        st.session_state["groq_api_key"] = input_key
-        st.rerun()
 
 # 4. DATA ENGINE: FETCH DETAILED TELUGU PANCHANGAM DYNAMICS
 @st.cache_data(ttl=3600)
 def get_panchangam_details():
-    # Production calculation matrix for the current cycle
     return {
         "thithi": "Shukla Paksha Ekadashi (Tridivya Moorthi)",
         "vaaram": f"{datetime.datetime.now().strftime('%A')} (Vasara)",
@@ -95,11 +80,9 @@ if app_mode == "📜 Sacred Dashboard":
             st.rerun()
             
     else:
-        # Welcome message banner
         u = st.session_state.user_profile
         st.success(f"🙏 Welcome back, Seeker {u['name']}. Your profile is active on the {u['focus']} timeline.")
         
-        # Grid layout for Panchangam Elements
         st.subheader("☀️ Daily Telugu Panchangam Real-Time Elements")
         
         c1, c2, c3 = st.columns(3)
@@ -113,7 +96,6 @@ if app_mode == "📜 Sacred Dashboard":
             st.markdown(f"<div class='card'><span class='panchangam-title'>🌀 Karanam (Half-Thithi)</span><br/>{panchangam['karanam']}</div>", unsafe_allow_html=True)
             st.markdown(f"<div class='card'><span class='panchangam-title'>🧭 Shula (Compass Caution)</span><br/>{panchangam['direction_shula']}</div>", unsafe_allow_html=True)
             
-        # Timing windows layout box
         st.write("---")
         st.subheader("⏳ Auspicious & Inauspicious Planetary Windows")
         col_left, col_right = st.columns(2)
@@ -122,7 +104,6 @@ if app_mode == "📜 Sacred Dashboard":
         with col_right:
             st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam (Heavy Gravity Window):</b><br/>{panchangam['rahukaalam']} - Postpone departures, new agreements, or launch commitments.</div>", unsafe_allow_html=True)
             
-        # Festivals expansion card
         st.write("---")
         st.subheader("🎉 Present Celebrations & Puranic Occasions")
         with st.expander("👁️ View Dynamic Occasion Details: Pradosha Vratam Alignment"):
@@ -150,11 +131,7 @@ elif app_mode == "💬 Rishi Chat Engine":
     else:
         u = st.session_state.user_profile
         
-        # Engine execution block
         def get_rishi_response(chat_query):
-            if not client:
-                return "⚠️ Please mount your API key in the configuration panel on the sidebar."
-                
             system_prompt = (
                 f"You are an ancient, completely omniscient Vedic Rishi and a deeply compassionate divine guru. "
                 f"Your goal is to increase the user's confidence and remove self-doubt. Speak with authority and absolute warmth.\n\n"
@@ -177,9 +154,8 @@ elif app_mode == "💬 Rishi Chat Engine":
                 )
                 return completion.choices[0].message.content
             except Exception as e:
-                return f"🪐 The astral currents are adjusting. Re-send your query. (Error details: {str(e)})"
+                return f"🪐 The astral currents are adjusting. Re-send your query."
 
-        # Active chat container render
         for chat in st.session_state.chat_history:
             av = "✨" if chat["role"] == "assistant" else "👤"
             with st.chat_message(chat["role"], avatar=av):
