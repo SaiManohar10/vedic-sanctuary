@@ -194,7 +194,7 @@ if app_mode == "📜 Sacred Dashboard":
                     🧭 <b>Auspicious Work Direction:</b><br/>
                     <span>{freq['direction']}</span><br/><br/>
                     
-                    🕉ntra <b>Your Core Daily Anchor Mantra:</b><br/>
+                    🕉️ <b>Your Core Daily Anchor Mantra:</b><br/>
                     <i style='color: #A04000;'>"{freq['mantra']}"</i>
                 </div>
             """, unsafe_allow_html=True)
