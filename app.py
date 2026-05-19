@@ -1,40 +1,54 @@
 import streamlit as st
 import datetime
+from zoneinfo import ZoneInfo
 import requests
 from groq import Groq
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-# 1. PRODUCTION ENGINE CONFIGURATION
+# 1. ENGINE & PRODUCTION CREDENTIAL SECURITY
 PRODUCTION_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=PRODUCTION_KEY)
 
-# 2. DESIGN THE SACRED SPACE (PREMIUM THEME & CARD LAYOUT)
+# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (UX UPGRADE)
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
 
 st.markdown("""
     <style>
+    /* Global Container Tuning */
     .reportview-container { background-color: #FAF9F6; }
-    h1 { color: #E65C00; font-family: 'Georgia', serif; text-align: center; font-size: 2.8rem; margin-bottom: 0px;}
-    .sub-header { text-align: center; color: #666; font-style: italic; margin-bottom: 25px; }
-    .stButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; width: 100%; }
-    .section-title { color: #A04000; font-family: 'Georgia', serif; font-size: 1.6rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #FFD3BC; padding-bottom: 5px; }
-    .card { background-color: #FFFFFF; padding: 20px; border-radius: 12px; border-left: 5px solid #E65C00; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .profile-card { background-color: #FFFDF9; padding: 20px; border-radius: 12px; border: 1px dashed #E65C00; margin-bottom: 15px; }
-    .panchangam-title { color: #E65C00; font-weight: bold; font-size: 1.05rem; }
-    .time-alert { background-color: #FFF5F0; padding: 12px; border-radius: 8px; border: 1px solid #FFD3BC; margin-bottom: 12px; }
-    .badge { background-color: #E65C00; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; }
+    h1 { color: #E65C00; font-family: 'Georgia', serif; text-align: center; font-size: 3rem; margin-bottom: 5px; font-weight: bold;}
+    .sub-header { text-align: center; color: #555; font-style: italic; margin-bottom: 30px; font-size: 1.1rem; }
+    .section-title { color: #A04000; font-family: 'Georgia', serif; font-size: 1.7rem; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #FFD3BC; padding-bottom: 8px; font-weight: bold; }
     
-    /* PREMIUM WHITE-LABEL CONSUMER INTERFACE IMPLEMENTATION */
+    /* Premium Premium Profile Banner Layout */
+    .premium-profile-banner { background: linear-gradient(135deg, #FFFDF9 0%, #FFF5ED 100%); border: 1px solid #FFD3BC; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(230,92,0,0.06); }
+    .profile-header { color: #E65C00; font-size: 1.6rem; font-family: 'Georgia', serif; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #FFD3BC; padding-bottom: 10px; }
+    .anchor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 15px; }
+    .anchor-item { background: #FFFFFF; padding: 15px; border-radius: 10px; border-top: 4px solid #E65C00; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .anchor-label { font-size: 0.85rem; color: #777; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block; }
+    .anchor-value { font-size: 1.05rem; color: #222; font-weight: 600; }
+    
+    /* Standard Layout Objects */
+    .card { background-color: #FFFFFF; padding: 22px; border-radius: 12px; border-left: 5px solid #E65C00; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.04); height: 100%; }
+    .panchangam-title { color: #E65C00; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
+    .time-alert { background-color: #FFF5F0; padding: 15px; border-radius: 10px; border: 1px solid #FFD3BC; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .badge-premium { background-color: #E65C00; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; display: inline-block; }
+    
+    /* UI White-Label System Controls */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDecoration {display:none;}
     [data-testid="stHeader"] {display: none;}
+    
+    /* Interactive Elements Styling */
+    .stButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 10px 24px; border: none; transition: all 0.3s ease; }
+    .stButton>button:hover { background-color: #C65000; transform: translateY(-1px); }
     </style>
     """, unsafe_allow_html=True)
 
-# Initialize Session State Variables
+# 3. STATE CONSOLIDATION & DATABASE CONNECTOR
 if "registered" not in st.session_state:
     st.session_state.registered = False
 if "chat_history" not in st.session_state:
@@ -42,38 +56,62 @@ if "chat_history" not in st.session_state:
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {}
 
-# Database Bridge Setup
 try:
     db_conn = st.connection("gsheets", type=GSheetsConnection)
 except:
     db_conn = None
 
-# 3. FULLY DYNAMIC AUTOMATED PANCHANGAM ENGINE
+# ==========================================
+# ADVANCED SUITE: AUTOMATED SESSION RECOVERY
+# ==========================================
+if not st.session_state.registered and db_conn is not None:
+    try:
+        # Scan cloud storage to find if any user records exist
+        existing_data = db_conn.read(ttl=5)
+        if not existing_data.empty:
+            last_row = existing_data.iloc[-1]
+            # Safely validate that the row is structurally robust
+            if pd.notna(last_row.get("Name")) and str(last_row.get("Name")).strip() != "":
+                st.session_state.user_profile = {
+                    "name": str(last_row["Name"]),
+                    "dob": str(last_row.get("DOB", "1998-06-10")),
+                    "gender": str(last_row.get("Gender", "Male")),
+                    "pob": str(last_row.get("POB", "Hyderabad, India")),
+                    "tob": str(last_row.get("TOB", "12:00:00")),
+                    "focus": str(last_row.get("Focus", "Career & Abundance Growth"))
+                }
+                st.session_state.registered = True
+    except Exception as e:
+        pass # Fallback gracefully to the clean registration screen
+
+# 4. TIMEZONE ENGINE: FORCED INDIAN STANDARD TIME (IST) CALCULATION
 def calculate_live_panchangam():
-    now = datetime.datetime.now()
-    day_of_week = now.strftime("%A")
+    # Explicit conversion to Asia/Kolkata timezone standard
+    ist_zone = ZoneInfo("Asia/Kolkata")
+    now_ist = datetime.datetime.now(ist_zone)
+    
+    day_of_week = now_ist.strftime("%A")
     
     timing_matrix = {
-        "Monday":    {"rahu": "07:30 AM to 09:00 AM", "yama": "10:30 AM to 12:00 PM", "dur": "12:45 PM to 01:35 PM", "color": "Pure White"},
+        "Monday":    {"rahu": "07:30 AM to 09:00 AM", "yama": "10:30 AM to 12:00 PM", "dur": "12:45 PM to 01:35 PM", "color": "Pure White & Silver"},
         "Tuesday":   {"rahu": "03:32 PM to 05:11 PM", "yama": "09:03 AM to 10:42 AM", "dur": "08:32 AM to 09:24 AM", "color": "Deep Saffron & Coral Red"},
         "Wednesday": {"rahu": "12:00 PM to 01:30 PM", "yama": "07:30 AM to 09:00 AM", "dur": "11:50 AM to 12:40 PM", "color": "Bud Green & Emerald"},
         "Thursday":  {"rahu": "01:30 PM to 03:00 PM", "yama": "06:00 AM to 07:30 AM", "dur": "10:10 AM to 11:00 AM", "color": "Golden Yellow & Turmeric"},
         "Friday":    {"rahu": "10:30 AM to 12:00 PM", "yama": "03:00 PM to 04:30 PM", "dur": "08:30 AM to 09:20 AM", "color": "Ocean Cyan & Cream"},
-        "Saturday":  {"rahu": "09:00 AM to 10:30 AM", "yama": "01:30 PM to 03:00 PM", "dur": "05:45 AM to 06:35 AM", "color": "Dark Indigo & Steel"},
+        "Saturday":  {"rahu": "09:00 AM to 10:30 AM", "yama": "01:30 PM to 03:00 PM", "dur": "05:45 AM to 06:35 AM", "color": "Dark Indigo & Blue-Black"},
         "Sunday":    {"rahu": "04:30 PM to 06:00 PM", "yama": "12:00 PM to 01:30 PM", "dur": "04:15 PM to 05:05 PM", "color": "Bright Ruby Red & Gold"}
     }
     
     current_planets = timing_matrix.get(day_of_week, timing_matrix["Tuesday"])
-    
-    lunar_thithi = "Sukla Paksha Dvitiya" if now.day % 2 == 0 else "Shukla Paksha Tritiya"
-    lunar_nakshatra = "Rohini / Mrigashira Transit" if now.day % 2 == 0 else "Ardra / Punarvasu Sequence"
+    lunar_thithi = "Shukla Paksha Dvitiya" if now_ist.day % 2 == 0 else "Shukla Paksha Tritiya"
+    lunar_nakshatra = "Rohini / Mrigashira Transit" if now_ist.day % 2 == 0 else "Ardra / Punarvasu Sequence"
     
     return {
-        "english_date": now.strftime("%B %d, %Y"),
-        "english_time": now.strftime("%I:%M %p"),
+        "english_date": now_ist.strftime("%B %d, %Y"),
+        "english_time": now_ist.strftime("%I:%M %p (IST)"),
         "samvatsaram": "Krodhi Nama Samvatsaram (Uttarayanam)",
         "maasam_paksham": "Vaisakha Maasam Cycle",
-        "thithi": f"{lunar_thithi} (Dynamic Lunar Phase)",
+        "thithi": f"{lunar_thithi}",
         "vaaram": f"{day_of_week} (Vasara)",
         "nakshatram": f"{lunar_nakshatra}",
         "yogam": "Siddha / Sukarma Planetary Conjunction",
@@ -81,7 +119,7 @@ def calculate_live_panchangam():
         "rahukaalam": current_planets["rahu"],
         "yamagandam": current_planets["yama"],
         "durmuhurtham": current_planets["dur"],
-        "abhijit_muhurtham": "11:51 AM to 12:43 PM (Protective Midday Window)",
+        "abhijit_muhurtham": "11:51 AM to 12:43 PM",
         "amrita_kaalam": "04:15 PM to 05:45 PM",
         "lucky_color": current_planets["color"]
     }
@@ -91,11 +129,11 @@ cal = calculate_live_panchangam()
 def compute_user_frequencies(focus_area):
     matrix = {
         "Career & Abundance Growth": {
-            "good_time": cal["abhijit_muhurtham"], "color": f"{cal['lucky_color']} accented with Gold", "number": "9",
+            "good_time": cal["abhijit_muhurtham"] + " (Abhijit Window)", "color": f"{cal['lucky_color']} accented with Gold", "number": "9",
             "direction": "North-East (Ishaanya) for career expansions", "mantra": "Om Shreem Hreem Kleem Kamale Kamatalaaye Praseed Praseed"
         },
         "Inner Peace & Stability": {
-            "good_time": cal["amrita_kaalam"], "color": "Pure Milky White & Pastel Cream", "number": "2",
+            "good_time": cal["amrita_kaalam"] + " (Amrita Window)", "color": "Pure Milky White & Pastel Cream", "number": "2",
             "direction": "East (Purva) for peaceful meditation layout", "mantra": "Om Shanti Shanti Shantihi"
         },
         "Harmonizing Relationships": {
@@ -110,32 +148,32 @@ def compute_user_frequencies(focus_area):
     return matrix.get(focus_area, matrix["Career & Abundance Growth"])
 
 # ==========================================
-# PHASE 1: MANDATORY SEEKER SIGN UP GATE
+# MODULE 1: MANDATORY SEEKER CLEAN REGISTRATION PAGE
 # ==========================================
 if not st.session_state.registered:
     st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='sub-header'>Create your cosmic alignment account to reveal the sacred space</p>", unsafe_allow_html=True)
+    st.markdown("<p class='sub-header'>Create your cosmic alignment profile to enter the sacred workspace</p>", unsafe_allow_html=True)
     
-    st.subheader("📜 New Seeker Onboarding")
-    st.write("Please fill out your precise birth details below. Leaving entries empty or default will hold access:")
+    st.subheader("📜 Seeker Registration Engine")
+    st.write("Please enter your exact birth coordinates below. Frequencies will compute dynamically upon entry:")
     
-    # Secure isolated signup form panel
-    with st.form("signup_gate_form"):
+    with st.form("gated_registration_form"):
         col1, col2 = st.columns(2)
         with col1:
-            name = st.text_input("Full Name", value="")
-            dob = st.date_input("Date of Birth", value=datetime.date(1998, 1, 1))
+            name = st.text_input("Full Name", value="", placeholder="Enter your full name")
+            dob = st.date_input("Date of Birth", value=datetime.date(1998, 6, 10))
             gender = st.selectbox("Gender Association", ["Select Gender", "Male", "Female", "Non-Binary"])
         with col2:
-            pob = st.text_input("Birth Location / City", value="")
-            tob = st.time_input("Exact Time of Birth", value=datetime.time(12, 0))
+            pob = st.text_input("Birth Location / City", value="", placeholder="e.g. Hyderabad, India")
+            # BUG FIX 1: Explicit minute-by-minute step configuration unlocked
+            tob = st.time_input("Exact Time of Birth", value=datetime.time(12, 0), step=60)
             core_focus = st.selectbox("Select Your Core Focus Timeline", ["Select Focus", "Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"])
             
-        submit_signup = st.form_submit_button("🔱 Register My Profile & Activate Platform")
+        submit_btn = st.form_submit_button("🔱 Compute My Regional Panchangam & Dashboard")
         
-        if submit_signup:
+        if submit_btn:
             if name.strip() == "" or pob.strip() == "" or gender == "Select Gender" or core_focus == "Select Focus":
-                st.error("❌ Registration stopped: Please input your actual full name, birth city, gender, and core focus area to calculate your frequencies.")
+                st.error("❌ Form Error: Please specify your name, birth location, gender, and core focus to compute elements.")
             else:
                 profile_data = {
                     "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [str(tob)], "Focus": [core_focus], "Timestamp": [str(datetime.datetime.now())]
@@ -147,28 +185,27 @@ if not st.session_state.registered:
                     pass
                     
                 st.session_state.user_profile = {
-                    "name": name, "dob": str(dob), "pob": pob, "tob": str(tob), "focus": core_focus, "gender": gender
+                    "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": str(tob), "focus": core_focus
                 }
                 st.session_state.registered = True
                 st.rerun()
 
 # ==========================================
-# PHASE 2: LOCKED CONTENT PLATFORM (REVEALED ONLY AFTER SIGN UP)
+# MODULE 2: PRODUCTION VIEW OVERRIDES (POST SIGN UP)
 # ==========================================
 else:
-    # 3. SIDEBAR NAVIGATION CONSOLE (Reveals exclusively after sign up)
     st.sidebar.header("🔱 Navigation Hub")
     app_mode = st.sidebar.radio("Go to Module:", ["📜 Sacred Dashboard", "💬 Rishi Chat Engine"])
     
     u = st.session_state.user_profile
     freq = compute_user_frequencies(u["focus"])
     
+    # 📜 MODULE 2A: SACRED DASHBOARD VIEW
     if app_mode == "📜 Sacred Dashboard":
         st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Your daily alignment portal anchored in ancient cosmic calculations</p>", unsafe_allow_html=True)
         
-        st.success(f"🙏 Welcome back, Seeker {u['name']}. Your profile is active on the {u['focus']} timeline.")
-        
+        # TIME DISPLAY BANNER (BUG FIX 5: Explicitly locked to dynamic Indian Standard Time)
         st.markdown(f"""
             <div style="background-color: #FFF9F3; border: 1px solid #FFD3BC; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px;">
                 <span style="color: #666; font-size: 0.95rem; font-weight: bold; text-transform: uppercase;">📅 Current Local Alignment</span><br/>
@@ -177,55 +214,66 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        left_panel, right_panel = st.columns([1, 2])
-        with left_panel:
-            st.markdown("<div class='section-title'>👤 Your Daily Cosmic Anchors</div>", unsafe_allow_html=True)
-            st.markdown(f"""
-                <div class='profile-card'>
-                    <b style='color: #E65C00; font-size:1.1rem;'>🙏 Seeker Profile: {u['name']}</b><br/>
-                    <small style='color:#777;'>Timeline Focus: {u['focus']}</small><br/><br/>
-                    
-                    🟢 <b>Your Prime Muhurtham for Today:</b><br/>
-                    <span style='color:#2E7D32; font-weight:bold;'>{freq['good_time']}</span><br/><br/>
-                    
-                    🎨 <b>Auspicious Color Vibration:</b><br/>
-                    <span class='badge'>{freq['color']}</span><br/><br/>
-                    
-                    🔢 <b>Lucky Cosmic Frequency Number:</b><br/>
-                    <b>{freq['number']}</b><br/><br/>
-                    
-                    🧭 <b>Auspicious Work Direction:</b><br/>
-                    <span>{freq['direction']}</span><br/><br/>
-                    
-                    🕉️ <b>Your Core Daily Anchor Mantra:</b><br/>
-                    <i style='color: #A04000;'>"{freq['mantra']}"</i>
+        # WIDE PROFILE DASHBOARD CARD DESIGN (BUG FIX 3 & 4: Erased narrow HTML blocks)
+        st.markdown(f"""
+            <div class='premium-profile-banner'>
+                <div class='profile-header'>🙏 Seeker Profile: {u['name']} &nbsp;|&nbsp; <span style='font-size:1.0rem; color:#666;'>Focus: {u['focus']}</span></div>
+                <div class='anchor-grid'>
+                    <div class='anchor-item'>
+                        <span class='anchor-label'>🟢 Prime Muhurtham</span>
+                        <span class='anchor-value' style='color:#2E7D32;'>{freq['good_time']}</span>
+                    </div>
+                    <div class='anchor-item'>
+                        <span class='anchor-label'>🎨 Color Vibration</span>
+                        <div style='margin-top:5px;'><span class='badge-premium'>{freq['color']}</span></div>
+                    </div>
+                    <div class='anchor-item'>
+                        <span class='anchor-label'>🔢 Lucky Frequency</span>
+                        <span class='anchor-value' style='font-size:1.3rem; color:#E65C00;'>{freq['number']}</span>
+                    </div>
+                    <div class='anchor-item'>
+                        <span class='anchor-label'>Compass Direction</span>
+                        <span class='anchor-value'>{freq['direction']}</span>
+                    </div>
                 </div>
-            """, unsafe_allow_html=True)
+                <div style='margin-top: 20px; padding-top: 15px; border-top: 1px dashed #FFD3BC;'>
+                    <span class='anchor-label'>🕉️ Your Daily Core Anchor Mantra</span>
+                    <span style='font-size: 1.2rem; font-family: "Georgia", serif; color: #A04000; font-weight: bold;'>"{freq['mantra']}"</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # FIVE LIMBS OF DYNAMIC TELUGU PANCHANGAM
+        st.markdown("<div class='section-title'>☀️ Five Limbs of the Day (Panchangam)</div>", unsafe_allow_html=True)
+        col_p1, col_p2, col_p3 = st.columns(3)
+        with col_p1:
+            st.markdown(f"<div class='card'><span class='panchangam-title'>🌙 Thithi (Lunar Phase)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['thithi']}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='card'><span class='panchangam-title'>🌟 Nakshatram (Star Mansion)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['nakshatram']}</span></div>", unsafe_allow_html=True)
+        with col_p2:
+            st.markdown(f"<div class='card'><span class='panchangam-title'>📅 Vaaram (Solar Day)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['vaaram']}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='card'><span class='panchangam-title'>⚡ Yogam (Planetary Angle)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['yogam']}</span></div>", unsafe_allow_html=True)
+        with col_p3:
+            st.markdown(f"<div class='card'><span class='panchangam-title'>🌀 Karanam (Half-Thithi)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['karanam']}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='card'><span class='panchangam-title'>📍 Born Coordinates Profile</span><span style='font-size:1.0rem; color:#555;'>Location: <b>{u['pob']}</b><br/>Born Time: <b>{u['tob']}</b></span></div>", unsafe_allow_html=True)
             
-        with right_panel:
-            st.markdown("<div class='section-title'>☀️ Five Limbs of the Day (Panchangam)</div>", unsafe_allow_html=True)
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown(f"<div class='card'><span class='panchangam-title'>🌙 Thithi</span><br/>{cal['thithi']}</div>", unsafe_allow_html=True)
-                st.markdown(f"<div class='card'><span class='panchangam-title'>🌟 Nakshatram</span><br/>{cal['nakshatram']}</div>", unsafe_allow_html=True)
-                st.markdown(f"<div class='card'><span class='panchangam-title'>📅 Vaaram</span><br/>{cal['vaaram']}</div>", unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"<div class='card'><span class='panchangam-title'>⚡ Yogam</span><br/>{cal['yogam']}</div>", unsafe_allow_html=True)
-                st.markdown(f"<div class='card'><span class='panchangam-title'>🌀 Karanam</span><br/>{cal['karanam']}</div>", unsafe_allow_html=True)
-                
+        # ALL DYNAMIC TIMING GAUGES DOCK
         st.markdown("<div class='section-title'>⏳ Comprehensive Timing Gauges of the Day</div>", unsafe_allow_html=True)
-        col_good, col_bad = st.columns(2)
-        with col_good:
-            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>✨ Abhijit Muhurtham:</b> {cal['abhijit_muhurtham']}<br/><small>Highly protected window. Ideal for executing vital agreements, business decisions, and investments.</small></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>🌅 Amrita Kaalam:</b> {cal['amrita_kaalam']}<br/><small>Optimal solar angle for internal practices, chant cycles, or starting a health routine.</small></div>", unsafe_allow_html=True)
-        with col_bad:
-            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam:</b> {cal['rahukaalam']}<br/><small>Heavy gravity window. Postpone major travel departures, financial transactions, or contracts.</small></div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>⚡ Durmuhurtham:</b> {cal['durmuhurtham']}<br/><small>Planetary friction window. Avoid confrontation, negotiations, or opening ceremonies.</small></div>", unsafe_allow_html=True)
+        col_g, col_b = st.columns(2)
+        with col_g:
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>✨ Abhijit Muhurtham:</b> {cal['abhijit_muhurtham']}<br/><small>Highly auspicious solar mid-day light. Ideal for asset acquisition and transactions.</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>🌅 Amrita Kaalam:</b> {cal['amrita_kaalam']}<br/><small>Optimal cosmic stream for internal meditations and japa mantra alignment.</small></div>", unsafe_allow_html=True)
+        with col_b:
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam:</b> {cal['rahukaalam']}<br/><small>High planetary gravity window. Postpone signing business contracts or initializing journeys.</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>⚡ Durmuhurtham:</b> {cal['durmuhurtham']}<br/><small>Frictional alignment window. Postpone major presentations or launch execution cycles.</small></div>", unsafe_allow_html=True)
             
-        if st.button("Log Out & Clear Profile Session"):
+        st.write("---")
+        if st.button("🚪 Log Out & Clear Profile Session"):
+            # Purge the background state variables cleanly
             st.session_state.registered = False
+            st.session_state.user_profile = {}
             st.rerun()
 
+    # 💬 MODULE 2B: DEDICATED EXCLUSIVE DOUBTS CHAT ENGINE
     elif app_mode == "💬 Rishi Chat Engine":
         st.markdown("<h1>💬 Ancient Rishi Doubt Triage</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Submit your explicit doubts, blockages, or questions directly to the Rishi council</p>", unsafe_allow_html=True)
@@ -250,7 +298,7 @@ else:
                 )
                 return completion.choices[0].message.content
             except Exception as e:
-                return f"🪐 The astral fields are heavy right now. Please re-type your doubt."
+                return f"🪐 The astral fields are heavy right now. Please re-send your query shortly."
 
         for chat in st.session_state.chat_history:
             av = "✨" if chat["role"] == "assistant" else "👤"
