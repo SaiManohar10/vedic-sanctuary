@@ -70,13 +70,13 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {}
+if "sync_required" not in st.session_state:
+    st.session_state.sync_required = False
 
 # ==========================================
-# BROWSER LOCAL STORAGE HARVESTER (JAVASCRIPT RECOVERY BRIDGE)
+# BROWSER LOCAL STORAGE RECOVERY ENGINE
 # ==========================================
-# This listens to local browser memory tags silently on initialization
 if not st.session_state.registered:
-    # Set up query parameters to extract data pushed from our JavaScript component frame
     query_params = st.query_params
     if "recovered_profile" in query_params:
         try:
@@ -84,23 +84,23 @@ if not st.session_state.registered:
             parsed_profile = json.loads(raw_json)
             st.session_state.user_profile = parsed_profile
             st.session_state.registered = True
-            # Clean url params up to maintain clean navigation logs
             st.query_params.clear()
             st.rerun()
         except:
             pass
     else:
-        # Silently deploy JavaScript to scan the browser's native window localStorage object
         st.components.v1.html("""
             <script>
-                const localData = window.parent.localStorage.getItem("vedic_seeker_profile");
-                if (localData) {
-                    const currentUrl = new URL(window.parent.location.href);
-                    if (!currentUrl.searchParams.has("recovered_profile")) {
-                        currentUrl.searchParams.set("recovered_profile", localData);
-                        window.parent.location.href = currentUrl.toString();
+                try {
+                    const localData = window.parent.localStorage.getItem("vedic_seeker_profile");
+                    if (localData && localData.trim() !== "") {
+                        const currentUrl = new URL(window.parent.location.href);
+                        if (!currentUrl.searchParams.has("recovered_profile")) {
+                            currentUrl.searchParams.set("recovered_profile", localData);
+                            window.parent.location.href = currentUrl.toString();
+                        }
                     }
-                }
+                } catch(e) {}
             </script>
         """, height=0, width=0)
 
@@ -208,27 +208,30 @@ if not st.session_state.registered:
                 val_star = known_star.strip() if known_star.strip() != "" else "Not Specified"
                 val_dasha = current_dasha if current_dasha != "Not Known / Auto-Calculate" else "Not Specified"
                 
-                profile_dict = {
+                st.session_state.user_profile = {
                     "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": val_tob, "focus": core_focus,
                     "gotram": val_gotram, "known_star": val_star, "current_dasha": val_dasha
                 }
-                
-                # INJECT PROFILE ROW INTO BROWSER ENGINE BEFORE REBOOTING INTERFACE STATE
-                json_payload = json.dumps(profile_dict)
-                st.components.v1.html(f"""
-                    <script>
-                        window.parent.localStorage.setItem("vedic_seeker_profile", `{json_payload}`);
-                        const u = new URL(window.parent.location.href);
-                        u.searchParams.set("recovered_profile", `{json_payload}`);
-                        window.parent.location.href = u.toString();
-                    </script>
-                """, height=0, width=0)
-                st.stop()
+                st.session_state.registered = True
+                st.session_state.sync_required = True
+                st.rerun()
 
 # ==========================================
 # MODULE 2: REVEALED CONTENT CANVAS
 # ==========================================
 else:
+    # BUG FIX: Write data to browser's native storage *after* successfully swapping views
+    if st.session_state.sync_required:
+        json_payload = json.dumps(st.session_state.user_profile)
+        st.components.v1.html(f"""
+            <script>
+                try {{
+                    window.parent.localStorage.setItem("vedic_seeker_profile", `{json_payload}`);
+                }} catch(e) {{}}
+            </script>
+        """, height=0, width=0)
+        st.session_state.sync_required = False
+
     # Dedicated Sidebar Profile Card Badge
     st.sidebar.markdown(f"""
         <div style='text-align: center; padding: 15px; background-color: #FFFDF9; border-radius: 12px; border: 1px solid #FFD3BC; margin-bottom: 20px;'>
@@ -380,7 +383,7 @@ else:
                 # STRINGIFY SYNC PAYLOAD BACK INTO THE DEVICE BROWSER
                 updated_json = json.dumps(st.session_state.user_profile)
                 st.components.v1.html(f"""
-                    <script>window.parent.localStorage.setItem("vedic_seeker_profile", `{updated_json}`);</script>
+                    <script>try {{ window.parent.localStorage.setItem("vedic_seeker_profile", `{updated_json}`); }} catch(e) {{}}</script>
                 """, height=0, width=0)
                 st.success("Configuration modifications updated locally inside browser memory!")
                 st.rerun()
@@ -388,13 +391,13 @@ else:
         st.write("---")
         st.subheader("🛑 Master Session Reset")
         st.write("Clicking below wipes all stored local caches, logging you out completely to accept a brand new user registration:")
-        
         if st.button("🚪 Clear Session Profile & Log Out"):
-            # DESTRUCT LOCALSTORAGE TO PREVENT AUTO-LOGIN LOOP ON LOGOUT
             st.components.v1.html("""
                 <script>
-                    window.parent.localStorage.removeItem("vedic_seeker_profile");
-                    window.parent.location.href = window.parent.location.origin + window.parent.location.pathname;
+                    try {
+                        window.parent.localStorage.removeItem("vedic_seeker_profile");
+                        window.parent.location.href = window.parent.location.origin + window.parent.location.pathname;
+                    } catch(e) {}
                 </script>
             """, height=0, width=0)
             st.session_state.registered = False
