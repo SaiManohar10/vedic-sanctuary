@@ -42,8 +42,17 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDecoration {display:none;}
-    [data-testid="stHeader"] {display: none;}
+    /* PREMIUM WHITE-LABEL CONSUMER INTERFACE IMPLEMENTATION */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDecoration {display:none;}
     
+    /* Hides the top bar menu but leaves the critical layout controllers active */
+    header[data-testid="stHeader"] { background: transparent !important; height: 0px !important; }
+    [data-testid="stToolbar"] { display: none !important; }
+    
+    /* Ensuring the sidebar button container remains touch-accessible */
+    [data-testid="stSidebarCollapseButton"] { background-color: #FFF5ED !important; border: 1px solid #FFD3BC !important; border-radius: 50% !important; margin-top: 10px !important; margin-left: 10px !important; z-index: 999999 !important; }
     /* Upgraded Saffron Interactive Action Button Layout */
     .stButton>button, .stFormSubmitButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 12px 30px; border: none; width: 100% !important; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(230,92,0,0.2); transition: all 0.3s ease; }
     .stButton>button:hover, .stFormSubmitButton>button:hover { background-color: #C65000; transform: translateY(-1px); }
