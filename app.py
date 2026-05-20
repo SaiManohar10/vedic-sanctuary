@@ -10,7 +10,7 @@ import pandas as pd
 PRODUCTION_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=PRODUCTION_KEY)
 
-# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (MOBILE RESPONSIVE UPGRADE)
+# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
 
 st.markdown("""
@@ -49,9 +49,7 @@ st.markdown("""
     .stButton>button, .stFormSubmitButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 12px 30px; border: none; width: 100% !important; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(230,92,0,0.2); transition: all 0.3s ease; }
     .stButton>button:hover, .stFormSubmitButton>button:hover { background-color: #C65000; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(230,92,0,0.3); }
     
-    /* ==========================================
-       FIXED RESPONSIVE MOBILE CORE OVERRIDES
-       ========================================== */
+    /* Fixed Responsive Mobile Layout Settings */
     @media only screen and (max-width: 768px) {
         h1 { font-size: 1.85rem !important; }
         .sub-header { font-size: 0.95rem !important; margin-bottom: 20px; }
@@ -61,8 +59,6 @@ st.markdown("""
         .anchor-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         .card { padding: 15px !important; margin-bottom: 12px !important; }
         .time-alert { padding: 12px !important; }
-        
-        /* SAFE RE-STACKING: Targets columns exclusively inside the main block body container */
         [data-testid="stMainBlockContainer"] [data-testid="column"] { width: 100% !important; flex: 1 1 auto !important; padding: 0 !important; margin-bottom: 12px !important; }
     }
     </style>
@@ -95,7 +91,7 @@ if not st.session_state.registered and db_conn is not None:
                     "dob": str(last_row.get("DOB", "1998-06-10")),
                     "gender": str(last_row.get("Gender", "Male")),
                     "pob": str(last_row.get("POB", "Hyderabad, India")),
-                    "tob": str(last_row.get("TOB", "12:00:00")),
+                    "tob": str(last_row.get("TOB", "Not Specified")),
                     "focus": str(last_row.get("Focus", "Career & Abundance Growth")),
                     "gotram": str(last_row.get("Gotram", "Not Specified")),
                     "known_star": str(last_row.get("Known_Star", "Not Specified")),
@@ -174,7 +170,7 @@ if not st.session_state.registered:
     st.markdown("<p class='sub-header'>Establish your birth alignment coordinates to enter the sacred space</p>", unsafe_allow_html=True)
     
     st.subheader("📜 Comprehensive Astro Onboarding Engine")
-    st.write("Provide your core milestones. Optional parameters can be left unselected to run standard calculations:")
+    st.write("Provide your core milestones. Optional parameters can be left blank to run standard calculations:")
     
     with st.form("gated_registration_form"):
         st.markdown("<b style='color:#E65C00; font-size:1.1rem;'>1. Core Birth Coordinates (Required)</b>", unsafe_allow_html=True)
@@ -185,7 +181,8 @@ if not st.session_state.registered:
             gender = st.selectbox("Gender Association", ["Select Gender", "Male", "Female", "Non-Binary"])
         with col2:
             pob = st.text_input("Birth Location / City", value="", placeholder="e.g. Hyderabad, India")
-            tob = st.time_input("Exact Time of Birth", value=datetime.time(12, 0), step=60)
+            # UX RE-ENGINEERING: Pure direct text field instead of drop-down time widgets
+            tob = st.text_input("Exact Time of Birth (Optional)", value="", placeholder="e.g. 10:10 AM or 22:45")
             core_focus = st.selectbox("Select Your Core Focus Timeline", ["Select Focus", "Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"])
             
         st.write("---")
@@ -204,12 +201,13 @@ if not st.session_state.registered:
             if name.strip() == "" or pob.strip() == "" or gender == "Select Gender" or core_focus == "Select Focus":
                 st.error("❌ Form Error: Please specify your name, birth location, gender, and core focus to compute elements.")
             else:
+                val_tob = tob.strip() if tob.strip() != "" else "Not Specified"
                 val_gotram = gotram.strip() if gotram.strip() != "" else "Not Specified"
                 val_star = known_star.strip() if known_star.strip() != "" else "Not Specified"
                 val_dasha = current_dasha if current_dasha != "Not Known / Auto-Calculate" else "Not Specified"
                 
                 profile_data = {
-                    "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [str(tob)], "Focus": [core_focus],
+                    "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [val_tob], "Focus": [core_focus],
                     "Gotram": [val_gotram], "Known_Star": [val_star], "Current_Dasha": [val_dasha],
                     "Timestamp": [str(datetime.datetime.now(ZoneInfo("Asia/Kolkata")))]
                 }
@@ -220,17 +218,16 @@ if not st.session_state.registered:
                     pass
                     
                 st.session_state.user_profile = {
-                    "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": str(tob), "focus": core_focus,
+                    "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": val_tob, "focus": core_focus,
                     "gotram": val_gotram, "known_star": val_star, "current_dasha": val_dasha
                 }
                 st.session_state.registered = True
                 st.rerun()
 
 # ==========================================
-# MODULE 2: PRODUCTION CONTENT PLATFORM
+# MODULE 2: REVEALED CONTENT CANVAS
 # ==========================================
 else:
-    # Dedicated Sidebar Profile Card Badge
     st.sidebar.markdown(f"""
         <div style='text-align: center; padding: 15px; background-color: #FFFDF9; border-radius: 12px; border: 1px solid #FFD3BC; margin-bottom: 20px;'>
             <span style='font-size: 2.5rem;'>👤</span><br/>
