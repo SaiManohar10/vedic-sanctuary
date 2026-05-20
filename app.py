@@ -3,14 +3,13 @@ import datetime
 from zoneinfo import ZoneInfo
 import requests
 from groq import Groq
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
+import json
 
 # 1. ENGINE & PRODUCTION CREDENTIAL SECURITY
 PRODUCTION_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=PRODUCTION_KEY)
 
-# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (MOBILE RESPONSIVE UPGRADE)
+# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (MOBILE RESPONSIVE)
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
 
 st.markdown("""
@@ -64,7 +63,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. STATE CONSOLIDATION & DATABASE CONNECTOR
+# 3. INITIALIZE STATE VARIABLE TRACKERS
 if "registered" not in st.session_state:
     st.session_state.registered = False
 if "chat_history" not in st.session_state:
@@ -72,37 +71,38 @@ if "chat_history" not in st.session_state:
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {}
 
-try:
-    db_conn = st.connection("gsheets", type=GSheetsConnection)
-except:
-    db_conn = None
-
 # ==========================================
-# ROBUST SESSION RECOVERY LOOP
+# BROWSER LOCAL STORAGE HARVESTER (JAVASCRIPT RECOVERY BRIDGE)
 # ==========================================
-if not st.session_state.registered and db_conn is not None:
-    try:
-        existing_data = db_conn.read(ttl=0)
-        if not existing_data.empty:
-            cleaned_df = existing_data.dropna(subset=["Name"])
-            cleaned_df = cleaned_df[cleaned_df["Name"].str.strip() != ""]
-            
-            if not cleaned_df.empty:
-                last_row = cleaned_df.iloc[-1]
-                st.session_state.user_profile = {
-                    "name": str(last_row["Name"]),
-                    "dob": str(last_row.get("DOB", "1998-06-10")),
-                    "gender": str(last_row.get("Gender", "Male")),
-                    "pob": str(last_row.get("POB", "Hyderabad, India")),
-                    "tob": str(last_row.get("TOB", "Not Specified")),
-                    "focus": str(last_row.get("Focus", "Career & Abundance Growth")),
-                    "gotram": str(last_row.get("Gotram", "Not Specified")),
-                    "known_star": str(last_row.get("Known_Star", "Not Specified")),
-                    "current_dasha": str(last_row.get("Current_Dasha", "Not Specified"))
+# This listens to local browser memory tags silently on initialization
+if not st.session_state.registered:
+    # Set up query parameters to extract data pushed from our JavaScript component frame
+    query_params = st.query_params
+    if "recovered_profile" in query_params:
+        try:
+            raw_json = query_params["recovered_profile"]
+            parsed_profile = json.loads(raw_json)
+            st.session_state.user_profile = parsed_profile
+            st.session_state.registered = True
+            # Clean url params up to maintain clean navigation logs
+            st.query_params.clear()
+            st.rerun()
+        except:
+            pass
+    else:
+        # Silently deploy JavaScript to scan the browser's native window localStorage object
+        st.components.v1.html("""
+            <script>
+                const localData = window.parent.localStorage.getItem("vedic_seeker_profile");
+                if (localData) {
+                    const currentUrl = new URL(window.parent.location.href);
+                    if (!currentUrl.searchParams.has("recovered_profile")) {
+                        currentUrl.searchParams.set("recovered_profile", localData);
+                        window.parent.location.href = currentUrl.toString();
+                    }
                 }
-                st.session_state.registered = True
-    except:
-        pass
+            </script>
+        """, height=0, width=0)
 
 # 4. TIMEZONE ENGINE: FORCED INDIAN STANDARD TIME (IST) CALCULATION
 def calculate_live_panchangam():
@@ -208,28 +208,28 @@ if not st.session_state.registered:
                 val_star = known_star.strip() if known_star.strip() != "" else "Not Specified"
                 val_dasha = current_dasha if current_dasha != "Not Known / Auto-Calculate" else "Not Specified"
                 
-                profile_data = {
-                    "Name": [name], "DOB": [str(dob)], "Gender": [gender], "POB": [pob], "TOB": [val_tob], "Focus": [core_focus],
-                    "Gotram": [val_gotram], "Known_Star": [val_star], "Current_Dasha": [val_dasha],
-                    "Timestamp": [str(datetime.datetime.now(ZoneInfo("Asia/Kolkata")))]
-                }
-                try:
-                    if db_conn:
-                        db_conn.create(data=pd.DataFrame(profile_data))
-                except:
-                    pass
-                    
-                st.session_state.user_profile = {
+                profile_dict = {
                     "name": name, "dob": str(dob), "gender": gender, "pob": pob, "tob": val_tob, "focus": core_focus,
                     "gotram": val_gotram, "known_star": val_star, "current_dasha": val_dasha
                 }
-                st.session_state.registered = True
-                st.rerun()
+                
+                # INJECT PROFILE ROW INTO BROWSER ENGINE BEFORE REBOOTING INTERFACE STATE
+                json_payload = json.dumps(profile_dict)
+                st.components.v1.html(f"""
+                    <script>
+                        window.parent.localStorage.setItem("vedic_seeker_profile", `{json_payload}`);
+                        const u = new URL(window.parent.location.href);
+                        u.searchParams.set("recovered_profile", `{json_payload}`);
+                        window.parent.location.href = u.toString();
+                    </script>
+                """, height=0, width=0)
+                st.stop()
 
 # ==========================================
 # MODULE 2: REVEALED CONTENT CANVAS
 # ==========================================
 else:
+    # Dedicated Sidebar Profile Card Badge
     st.sidebar.markdown(f"""
         <div style='text-align: center; padding: 15px; background-color: #FFFDF9; border-radius: 12px; border: 1px solid #FFD3BC; margin-bottom: 20px;'>
             <span style='font-size: 2.5rem;'>👤</span><br/>
@@ -376,14 +376,28 @@ else:
                 st.session_state.user_profile.update({
                     "name": new_name, "pob": new_pob, "gotram": new_gotram, "known_star": new_star, "focus": new_focus
                 })
-                st.success("Configuration modifications updated locally!")
+                
+                # STRINGIFY SYNC PAYLOAD BACK INTO THE DEVICE BROWSER
+                updated_json = json.dumps(st.session_state.user_profile)
+                st.components.v1.html(f"""
+                    <script>window.parent.localStorage.setItem("vedic_seeker_profile", `{updated_json}`);</script>
+                """, height=0, width=0)
+                st.success("Configuration modifications updated locally inside browser memory!")
                 st.rerun()
                 
         st.write("---")
         st.subheader("🛑 Master Session Reset")
         st.write("Clicking below wipes all stored local caches, logging you out completely to accept a brand new user registration:")
+        
         if st.button("🚪 Clear Session Profile & Log Out"):
+            # DESTRUCT LOCALSTORAGE TO PREVENT AUTO-LOGIN LOOP ON LOGOUT
+            st.components.v1.html("""
+                <script>
+                    window.parent.localStorage.removeItem("vedic_seeker_profile");
+                    window.parent.location.href = window.parent.location.origin + window.parent.location.pathname;
+                </script>
+            """, height=0, width=0)
             st.session_state.registered = False
             st.session_state.user_profile = {}
             st.session_state.chat_history = []
-            st.rerun()
+            st.stop()
