@@ -10,7 +10,7 @@ import pandas as pd
 PRODUCTION_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=PRODUCTION_KEY)
 
-# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (MOBILE & DESKTOP STABLE)
+# 2. DESIGN TRADITIONAL MODERN SANCTUARY THEME (MOBILE RESPONSIVE UPGRADE)
 st.set_page_config(page_title="The Vedic Sanctuary", page_icon="🔱", layout="wide")
 
 st.markdown("""
@@ -37,20 +37,19 @@ st.markdown("""
     .time-alert { background-color: #FFF5F0; padding: 14px; border-radius: 10px; border: 1px solid #FFD3BC; margin-bottom: 15px; }
     .badge-premium { background-color: #E65C00; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; }
     
-    /* BRANDING REMOVAL: ENFORCES VISIBILITY FOR SIDEBAR CONTROLS */
+    /* TARGETED BRANDING REMOVAL WITHOUT BREAKING THE NAVIGATION CORE */
     [data-testid="stToolbar"] { display: none !important; }
     footer { visibility: hidden !important; }
     .stDecoration { display: none !important; }
     
-    /* Force Sidebar Open Tab Arrow to render styled on laptop and mobile viewports */
-    [data-testid="stSidebarCollapseButton"] button { background-color: #FFF5ED !important; border: 1px solid #FFD3BC !important; border-radius: 50% !important; color: #E65C00 !important; font-weight: bold !important; box-shadow: 0 4px 10px rgba(230,92,0,0.18) !important; width: 40px !important; height: 40px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
-    [data-testid="stHeader"] { background: transparent !important; z-index: 999 !important; }
+    /* Premium Saffron Sidebar Button Engine */
+    button[data-testid="stSidebarCollapseButton"] { background-color: #FFF5ED !important; border: 1px solid #FFD3BC !important; border-radius: 50% !important; color: #E65C00 !important; font-weight: bold !important; box-shadow: 0 4px 10px rgba(230,92,0,0.18) !important; visibility: visible !important; display: inline-flex !important; }
     
-    /* Upgraded Saffron Action Buttons Styling */
+    /* Upgraded Saffron Interactive Action Button Layout */
     .stButton>button, .stFormSubmitButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 12px 30px; border: none; width: 100% !important; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(230,92,0,0.2); transition: all 0.3s ease; }
     .stButton>button:hover, .stFormSubmitButton>button:hover { background-color: #C65000; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(230,92,0,0.3); }
     
-    /* Mobile Layout Optimizations */
+    /* Fixed Responsive Mobile Layout Settings */
     @media only screen and (max-width: 768px) {
         h1 { font-size: 1.85rem !important; }
         .sub-header { font-size: 0.95rem !important; margin-bottom: 20px; }
@@ -79,13 +78,12 @@ except:
     db_conn = None
 
 # ==========================================
-# ROBUST AUTO-LOGIN SYSTEM (WIPES DEAD STRING TRAPS)
+# ROBUST SESSION RECOVERY LOOP
 # ==========================================
 if not st.session_state.registered and db_conn is not None:
     try:
         existing_data = db_conn.read(ttl=0)
         if not existing_data.empty:
-            # Drop empty columns/rows that cause parsing failures
             cleaned_df = existing_data.dropna(subset=["Name"])
             cleaned_df = cleaned_df[cleaned_df["Name"].str.strip() != ""]
             
@@ -229,7 +227,7 @@ if not st.session_state.registered:
                 st.rerun()
 
 # ==========================================
-# MODULE 2: PRODUCTION INSIDE DASHBOARD REVEALED
+# MODULE 2: REVEALED CONTENT CANVAS
 # ==========================================
 else:
     st.sidebar.markdown(f"""
@@ -246,6 +244,7 @@ else:
     u = st.session_state.user_profile
     freq = compute_user_frequencies(u["focus"])
     
+    # MODULE 2A: SACRED DASHBOARD VIEW
     if app_mode == "📜 Sacred Dashboard":
         st.markdown("<h1>🔱 The Vedic Sanctuary</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Your daily alignment portal anchored in ancient cosmic calculations</p>", unsafe_allow_html=True)
@@ -314,6 +313,7 @@ else:
             st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam:</b> {cal['rahukaalam']}<br/><small>High planetary gravity window. Postpone signing business contracts or initializing journeys.</small></div>", unsafe_allow_html=True)
             st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>⚡ Durmuhurtham:</b> {cal['durmuhurtham']}<br/><small>Frictional alignment window. Postpone major presentations or launch execution cycles.</small></div>", unsafe_allow_html=True)
 
+    # MODULE 2B: DEDICATED EXCLUSIVE DOUBTS CHAT ENGINE
     elif app_mode == "💬 Rishi Chat Engine":
         st.markdown("<h1>💬 Ancient Rishi Doubt Triage</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Submit your explicit doubts, blockages, or questions directly to the Rishi council</p>", unsafe_allow_html=True)
@@ -358,6 +358,7 @@ else:
                     st.markdown(reply)
                     st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
+    # MODULE 2C: EDIT PROFILE CONFIGURATION HUBS
     elif app_mode == "⚙️ Edit Profile Data":
         st.markdown("<h1>⚙️ Edit Profile Configuration</h1>", unsafe_allow_html=True)
         st.markdown("<p class='sub-header'>Modify your astrological parameters or clear your session records completely</p>", unsafe_allow_html=True)
