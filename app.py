@@ -180,7 +180,8 @@ if not st.session_state.registered:
         col1, col2 = st.columns(2)
         with col1:
             name = st.text_input("Full Name", value="", placeholder="Enter your full name")
-            dob = st.date_input("Date of Birth", value=datetime.date(1998, 6, 10))
+            # BUG FIX: WIDENED CALENDAR MATRIX FROM YEAR 1920 TO 2026 PRECISELY
+            dob = st.date_input("Date of Birth", value=datetime.date(1998, 6, 10), min_value=datetime.date(1920, 1, 1), max_value=datetime.date(2026, 12, 31))
             gender = st.selectbox("Gender Association", ["Select Gender", "Male", "Female", "Non-Binary"])
         with col2:
             pob = st.text_input("Birth Location / City", value="", placeholder="e.g. Hyderabad, India")
@@ -220,7 +221,6 @@ if not st.session_state.registered:
 # MODULE 2: REVEALED CONTENT CANVAS
 # ==========================================
 else:
-    # BUG FIX: Write data to browser's native storage *after* successfully swapping views
     if st.session_state.sync_required:
         json_payload = json.dumps(st.session_state.user_profile)
         st.components.v1.html(f"""
