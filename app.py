@@ -296,3 +296,94 @@ else:
         with col_p3:
             st.markdown(f"<div class='card'><span class='panchangam-title'>🌀 Karanam (Half-Thithi)</span><span style='font-size:1.15rem; font-weight:500;'>{cal['karanam']}</span></div>", unsafe_allow_html=True)
             st.markdown(f"""<div class='card'>
+                <span class='panchangam-title'>📍 Astro Coordinates Ledger</span>
+                <span style='font-size:0.95rem; color:#444;'>
+                    City: <b>{u['pob']}</b> &nbsp;|&nbsp; Time: <b>{u['tob']}</b><br/>
+                    Gotram: <b>{u['gotram']}</b> &nbsp;|&nbsp; Nakshatram: <b>{u['known_star']}</b><br/>
+                    Active Cycle: <b>{u['current_dasha']}</b>
+                </span>
+            </div>""", unsafe_allow_html=True)
+            
+        st.markdown("<div class='section-title'>⏳ Comprehensive Timing Gauges of the Day</div>", unsafe_allow_html=True)
+        col_g, col_b = st.columns(2)
+        with col_g:
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>✨ Abhijit Muhurtham:</b> {cal['abhijit_muhurtham']}<br/><small>Highly auspicious solar mid-day light. Ideal for asset acquisition and transactions.</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #4CAF50;'><b style='color:#2E7D32;'>🌅 Amrita Kaalam:</b> {cal['amrita_kaalam']}<br/><small>Optimal cosmic stream for internal meditations and japa mantra alignment.</small></div>", unsafe_allow_html=True)
+        with col_b:
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>🚫 Rahu Kaalam:</b> {cal['rahukaalam']}<br/><small>High planetary gravity window. Postpone signing business contracts or initializing journeys.</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='time-alert' style='border-left: 5px solid #F44336;'><b style='color:#C62828;'>⚡ Durmuhurtham:</b> {cal['durmuhurtham']}<br/><small>Frictional alignment window. Postpone major presentations or launch execution cycles.</small></div>", unsafe_allow_html=True)
+
+    # MODULE 2B: DEDICATED EXCLUSIVE DOUBTS CHAT ENGINE
+    elif app_mode == "💬 Rishi Chat Engine":
+        st.markdown("<h1>💬 Ancient Rishi Doubt Triage</h1>", unsafe_allow_html=True)
+        st.markdown("<p class='sub-header'>Submit your explicit doubts, blockages, or questions directly to the Rishi council</p>", unsafe_allow_html=True)
+        
+        def get_rishi_response(chat_query):
+            system_prompt = (
+                f"You are an ancient, completely omniscient Vedic Rishi counseling a seeker named {u['name']}.\n"
+                f"Their astro profile metrics are: Gotram Clan: {u['gotram']}, Declared Birth Star: {u['known_star']}, Active Maha Dasha Time: {u['current_dasha']}.\n\n"
+                f"Your exclusive purpose in this module is to resolve their explicit personal doubts, confusion, or spiritual problems.\n"
+                f"Guidelines:\n"
+                f"1. Acknowledge their question with immense compassion and direct clarity. Focus on boosting their confidence.\n"
+                f"2. Contextualize your counsel slightly around their focus area timeline ({u['focus']}) and their active Dasha timeline if specified.\n"
+                f"3. To anchor your answer, always close your message by reminding them of today's anchors: Lucky Color: {freq['color']}, Lucky Number: {freq['number']}, and the Sanskrit mantra: '{freq['mantra']}'.\n"
+                f"4. Keep your tone serene, authoritative, and completely direct to the point."
+            )
+            try:
+                completion = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": chat_query}
+                    ],
+                    temperature=0.6
+                )
+                return completion.choices[0].message.content
+            except Exception as e:
+                return f"🪐 The astral fields are heavy right now. Please re-send your query shortly."
+
+        for chat in st.session_state.chat_history:
+            av = "✨" if chat["role"] == "assistant" else "👤"
+            with st.chat_message(chat["role"], avatar=av):
+                st.markdown(chat["content"])
+
+        if user_msg := st.chat_input("Submit your explicit question or doubt to the Guru..."):
+            st.session_state.chat_history.append({"role": "user", "content": user_msg})
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(user_msg)
+                
+            with st.chat_message("assistant", avatar="✨"):
+                with st.spinner("Resolving inner friction paths..."):
+                    reply = get_rishi_response(user_msg)
+                    st.markdown(reply)
+                    st.session_state.chat_history.append({"role": "assistant", "content": reply})
+
+    # MODULE 2C: EDIT PROFILE CONFIGURATION HUBS
+    elif app_mode == "⚙️ Edit Profile Data":
+        st.markdown("<h1>⚙️ Edit Profile Configuration</h1>", unsafe_allow_html=True)
+        st.markdown("<p class='sub-header'>Modify your astrological parameters or clear your session records completely</p>", unsafe_allow_html=True)
+        
+        st.subheader("🔄 Update Your Active Values")
+        with st.form("edit_profile_form"):
+            new_name = st.text_input("Edit Name", value=u["name"])
+            new_pob = st.text_input("Edit Birth Location", value=u["pob"])
+            new_gotram = st.text_input("Edit Gotram Lineage", value=u["gotram"])
+            new_star = st.text_input("Edit Known Nakshatram", value=u["known_star"])
+            new_focus = st.selectbox("Edit Timeline Focus", ["Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"], index=["Career & Abundance Growth", "Inner Peace & Stability", "Harmonizing Relationships", "Health & Vitality"].index(u["focus"]))
+            
+            save_edit = st.form_submit_button("💾 Save Local Configuration Changes")
+            if save_edit:
+                st.session_state.user_profile.update({
+                    "name": new_name, "pob": new_pob, "gotram": new_gotram, "known_star": new_star, "focus": new_focus
+                })
+                st.success("Configuration modifications updated locally!")
+                st.rerun()
+                
+        st.write("---")
+        st.subheader("🛑 Master Session Reset")
+        st.write("Clicking below wipes all stored local caches, logging you out completely to accept a brand new user registration:")
+        if st.button("🚪 Clear Session Profile & Log Out"):
+            st.session_state.registered = False
+            st.session_state.user_profile = {}
+            st.session_state.chat_history = []
+            st.rerun()
