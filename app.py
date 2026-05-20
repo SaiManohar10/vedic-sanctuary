@@ -37,21 +37,20 @@ st.markdown("""
     .time-alert { background-color: #FFF5F0; padding: 14px; border-radius: 10px; border: 1px solid #FFD3BC; margin-bottom: 15px; }
     .badge-premium { background-color: #E65C00; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; }
     
-    /* TARGETED BRANDING REMOVAL: LEAVES INTERACTIVE NAVIGATION HUB FULLY FUNCTIONAL */
-    [data-testid="stHeader"] { background: transparent !important; height: 40px !important; }
+    /* TARGETED BRANDING REMOVAL WITHOUT BREAKING THE NAVIGATION CORE */
     [data-testid="stToolbar"] { display: none !important; }
     footer { visibility: hidden !important; }
     .stDecoration { display: none !important; }
     
-    /* Premium Saffron Highlight Styling for the Navigation Slide Trigger */
-    button[data-testid="stSidebarCollapseButton"] { background-color: #FFF5ED !important; border: 1px solid #FFD3BC !important; border-radius: 50% !important; color: #E65C00 !important; font-weight: bold !important; box-shadow: 0 2px 6px rgba(230,92,0,0.15) !important; margin-top: 8px !important; }
+    /* Premium Saffron Sidebar Button Engine */
+    button[data-testid="stSidebarCollapseButton"] { background-color: #FFF5ED !important; border: 1px solid #FFD3BC !important; border-radius: 50% !important; color: #E65C00 !important; font-weight: bold !important; box-shadow: 0 4px 10px rgba(230,92,0,0.18) !important; visibility: visible !important; display: inline-flex !important; }
     
     /* Upgraded Saffron Interactive Action Button Layout */
     .stButton>button, .stFormSubmitButton>button { background-color: #E65C00; color: white; border-radius: 25px; font-weight: bold; padding: 12px 30px; border: none; width: 100% !important; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(230,92,0,0.2); transition: all 0.3s ease; }
     .stButton>button:hover, .stFormSubmitButton>button:hover { background-color: #C65000; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(230,92,0,0.3); }
     
     /* ==========================================
-       MOBILE RESPONSIVE CSS INJECTIONS
+       FIXED RESPONSIVE MOBILE CORE OVERRIDES
        ========================================== */
     @media only screen and (max-width: 768px) {
         h1 { font-size: 1.85rem !important; }
@@ -62,7 +61,9 @@ st.markdown("""
         .anchor-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         .card { padding: 15px !important; margin-bottom: 12px !important; }
         .time-alert { padding: 12px !important; }
-        [data-testid="column"] { width: 100% !important; flex: 1 1 auto !important; padding: 0 !important; margin-bottom: 10px !important; }
+        
+        /* SAFE RE-STACKING: Targets columns exclusively inside the main block body container */
+        [data-testid="stMainBlockContainer"] [data-testid="column"] { width: 100% !important; flex: 1 1 auto !important; padding: 0 !important; margin-bottom: 12px !important; }
     }
     </style>
     """, unsafe_allow_html=True)
